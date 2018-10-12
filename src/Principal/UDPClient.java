@@ -5,13 +5,19 @@
  */
 package Principal;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,8 +29,39 @@ public class UDPClient {
     
     private static final int MAX_TIMEOUT = 250;
     private static final int QTD_PACOTES_ENVIADOS = 10;
+    private Calendar cal;
+    private SimpleDateFormat sdf;
+    
+    public void regLog(List<String> l) {
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new FileWriter("log.txt", true));
+            cal = Calendar.getInstance();
+            sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:SS");
+            bw.write(sdf.format(cal.getTime()));
+            bw.newLine();
+            for(String s : l) {
+                bw.write(s);
+                bw.newLine();
+            }
+            bw.newLine();
+            
+        } catch (IOException e) {
+            System.out.println("Erro ao abrir o arquivo de log");
+        } finally {    
+            if (bw != null) {
+                try {
+                    bw.close();
+                } catch (IOException ex) {
+                    System.out.println("Erro ao fechar o arquivo de log");
+                }
+            }
+        
+        }
+    }
     
     public static void main(String[] args) throws SocketException, UnknownHostException, IOException {
+        
         DatagramSocket clientSocket = new DatagramSocket();
         clientSocket.setSoTimeout(MAX_TIMEOUT);
         
@@ -101,15 +138,34 @@ public class UDPClient {
         clientSocket.close();
         System.out.println("Socket cliente fechado!");
         float porcentagemPerda = 100 - ((100*qtdPacksReceive)/QTD_PACOTES_ENVIADOS);
-        System.out.println("------------------------------------------------------------------------------------");
-        System.out.format("|Estatistica do ping para: %-30s na porta %-5d|\n", IPAddress, porta);
-        //System.out.println("|Estatistica do ping para: " + IPAddress + " na porta " + porta);
-        System.out.println("|Pacotes: Enviados = " + QTD_PACOTES_ENVIADOS + ", Recebidos = " + 
-                qtdPacksReceive + ", Perdidos = " + (QTD_PACOTES_ENVIADOS - qtdPacksReceive) + " ("+ porcentagemPerda + "% de perda)");
+        int lostPacks = QTD_PACOTES_ENVIADOS - qtdPacksReceive;
         avg = totalTime/rttReceive;
-        System.out.println("|Tempo aproximado em milissegundos: Mínimo = " + min + " ms, Máximo = " + max + " ms, Média = " + 
-                avg + " ms");
-        System.out.println("------------------------------------------------------------------------------------");
+        List<String> linhas = new ArrayList<String>();
+        String linha = "------------------------------------------------------------------------------------";
+        System.out.println(linha);
+        linhas.add(linha);
+        linha = "|Estatistica do ping para: " + IPAddress + " na porta " + porta + "           |";
+        System.out.println(linha);
+        linhas.add(linha);
+        linha = "|Pacotes: Enviados = " + QTD_PACOTES_ENVIADOS + ", Recebidos = " + qtdPacksReceive + ", Perdidos = " + lostPacks + " ("+ porcentagemPerda + "% de perda)              |";
+        System.out.println(linha);
+        linhas.add(linha);
+        linha ="|Tempo aproximado em milissegundos: Mínimo = " + min + " ms, Máximo = " + max + " ms, Média = " + avg + " ms  |";
+        System.out.println(linha);
+        linhas.add(linha);
+        linha = "------------------------------------------------------------------------------------";
+        System.out.println(linha);
+        linhas.add(linha);
+        
+        //escrevendo no arquivo de logs
+        new UDPClient().regLog(linhas);
+        //System.out.println("------------------------------------------------------------------------------------");
+        //System.out.println("|Estatistica do ping para: " + IPAddress + " na porta " + porta + "           |");
+        //System.out.println("|Pacotes: Enviados = " + QTD_PACOTES_ENVIADOS + ", Recebidos = " + 
+        //        qtdPacksReceive + ", Perdidos = " + lostPacks + " ("+ porcentagemPerda + "% de perda)              |");
+        //System.out.println("|Tempo aproximado em milissegundos: Mínimo = " + min + " ms, Máximo = " + max + " ms, Média = " + 
+        //        avg + " ms  |");
+        //System.out.println("------------------------------------------------------------------------------------");
         
     }
         
