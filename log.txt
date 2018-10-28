@@ -1,0 +1,7 @@
+12/10/2018 17:44:288
+------------------------------------------------------------------------------------
+|Estatistica do ping para: ibiza.dcc.ufla.br/177.105.60.80 na porta 5002           |
+|Pacotes: Enviados = 10, Recebidos = 8, Perdidos = 2 (20.0% de perda)              |
+|Tempo aproximado em milissegundos: Mínimo = 31 ms, Máximo = 147 ms, Média = 9 ms  |
+------------------------------------------------------------------------------------
+

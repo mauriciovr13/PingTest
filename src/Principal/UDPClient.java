@@ -11,14 +11,12 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  *
- * @author Mauricio
+ * @author Mauricio Vieira e Pedro Pio
  */
 public class UDPClient {
     
@@ -26,8 +24,9 @@ public class UDPClient {
     private static final int QTD_PACOTES_ENVIADOS = 20;
     
     public static void main(String[] args) throws SocketException, UnknownHostException, IOException {
-        
+        //Criando o mecanismo de comunicação entre os programas de cliente e servidor
         DatagramSocket clientSocket = new DatagramSocket();
+        //setando o timeout
         clientSocket.setSoTimeout(MAX_TIMEOUT);
         
         String servidor = "ibiza.dcc.ufla.br";
@@ -39,10 +38,10 @@ public class UDPClient {
         long rttReceive = 0;                //Tempo de resposta
         int qtdPacksReceive = 0;            //Quantidade de pacotes recebidos
         int pack = 1;                       //Numero do pacote atual
-        long max = 0, avg = 0, min = 251;   //Tempo minino, maximo e a media para recebimento da resposta
+        long max = 0, avg = 0, min = 251;   //Tempo minino, maximo e a medio para recebimento da resposta
         long start = 0;                     //Tempo na hora do envio do pacote
         long end = 0;                       //Tempo na hora do recebimento do pacote
-        long totalTime = 0;                 //Tempo total gasto para enviar os pacotes
+        long totalTime = 0;                 //Tempo total gasto para enviar todos os pacotes
         
         byte[] sendData = new byte[1024];
         byte[] receiveData = new byte[1024];
@@ -52,23 +51,26 @@ public class UDPClient {
             String sentence = "pacote " + pack;
 
             sendData = sentence.getBytes();
-
+            //criando o datagrama do pacote que será enviado
             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, porta);
 
             System.out.println("Enviando " + sentence + " UDP para " + servidor + ":" + porta);
             
+            //obtendo o tempo inicial
             start = System.nanoTime();
-
+            
+            //enviando o datagrama
             clientSocket.send(sendPacket);
             
             try {
+                //criando o datagrama do pacote a ser recebido
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                                 
                 clientSocket.receive(receivePacket);
-                end = System.nanoTime();
+                end = System.nanoTime(); //obtendo o tempo final
                 
-                rttReceive = end - start;
-                System.out.println(rttReceive);
+                rttReceive = (end - start)/1000000; //convertendo para ms
+                //System.out.println(rttReceive);
                 
                 if (rttReceive < min) min = rttReceive;
                 if (rttReceive > max) max = rttReceive;
@@ -83,13 +85,13 @@ public class UDPClient {
                 
                 qtdPacksReceive++;
                 
-                Thread.sleep(1000000000 - rttReceive);
+                Thread.sleep(1000 - rttReceive);
 
                 //clientSocket.close();
             } catch (IOException | InterruptedException e) {
                     end = System.nanoTime();
-                    long tempoAux = end - start;
-                    System.out.println("Error, tempo gasto foi de "+ (end-start));
+                    long tempoAux = (end - start)/1000000;
+                    System.out.println("Error, tempo gasto foi de "+ tempoAux);
                 try {
                     Thread.sleep(1000 - tempoAux);
                 } catch (InterruptedException ex) {
@@ -101,9 +103,9 @@ public class UDPClient {
             pack++;
             
         }
-        double min2 = min/1000000;
-        double max2 = max/1000000;
-        avg = (totalTime/qtdPacksReceive)/1000000;
+        double min2 = min;
+        double max2 = max;
+        avg = totalTime/qtdPacksReceive;
         clientSocket.close();
         System.out.println("Socket cliente fechado!");
         float porcentagemPerda = 100 - ((100*qtdPacksReceive)/QTD_PACOTES_ENVIADOS);
@@ -111,11 +113,9 @@ public class UDPClient {
         //avg = totalTime/qtdPacksReceive;
         StringBuilder resultado = new StringBuilder();
         resultado.append("------------------------------------------------------------------------------------\n");
-        resultado.append("Estatistica do ping para: " + IPAddress + " na porta " + porta + "           \n");
-        resultado.append("Pacotes: Enviados = " + QTD_PACOTES_ENVIADOS + ", Recebidos = " + qtdPacksReceive + ", Perdidos = " + 
-                lostPacks + " ("+ porcentagemPerda + "% de perda)              \n");
-        resultado.append("Tempo aproximado em milissegundos: Mínimo = " + min + " ms, Máximo = " + max + " ms, Média = " + 
-                avg + " ms  \n");
+        resultado.append("Estatistica do ping para: ").append(IPAddress).append(" na porta ").append(porta).append("           \n");
+        resultado.append("Pacotes: Enviados = ").append(QTD_PACOTES_ENVIADOS).append(", Recebidos = ").append(qtdPacksReceive).append(", Perdidos = ").append(lostPacks).append(" (").append(porcentagemPerda).append("% de perda)\n");
+        resultado.append("Tempo aproximado em milissegundos: Mínimo = ").append(min).append(" ms, Máximo = ").append(max).append(" ms, Média = ").append(avg).append(" ms  \n");
         resultado.append("------------------------------------------------------------------------------------\n");
         System.out.println(resultado);
     }
