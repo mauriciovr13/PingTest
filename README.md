@@ -1,2 +1,2 @@
 # PingTest
-Implementação de uma versão simplicada do comando ping
+Deploying a Simplified Version of the Ping Command
